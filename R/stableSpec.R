@@ -7,6 +7,7 @@
 #' The next \code{n} data points contain the relations that occur in
 #' time slices \code{t_1} and \code{t_2}. The \code{i-th} subset of \code{n}
 #' data points contain the relations in time slices \code{t_i-1} and \code{t_i}.
+#' One can use function \code{\link{dataReshape}} to reshape longitudinal data.
 #' @param nSubset number of subsets to draw. In practice, it is suggested
 #' to have at least 25 subsets. The default is 10.
 #' @param iteration number of iterations/generations for NSGA-II.
@@ -16,8 +17,8 @@
 #' @param crossRate crossover rate. The default is 0.85.
 #' @param longitudinal \code{TRUE} for longitudinal data,
 #' and \code{FALSE} for cross-sectional data.
-#' @param numTime number of time slices. If a cross-sectional data then
-#' it is 1. The default is 1.
+#' @param numTime number of time slices. If the data is cross-sectional,
+#' this argument must be set to 1.
 #' @param seed integer vector representing seeds that are used to subsample data.
 #' The default is an integer vector with range \code{100:1000} with length
 #' equal to \code{nSubset}.
@@ -33,6 +34,12 @@
 #' @param threshold threshold of stability selection. The default is 0.6.
 #' @param toPlot if \code{TRUE} a plot of inferred causal model is generated,
 #' otherwise a graph object is returned. The default is \code{TRUE}.
+#' @param mixture if the data contains both continuous and
+#' categorical (or ordinal) variables, this argument can be set
+#' to \code{TRUE}. This implies the use of
+#' \code{polychoric} and \code{polyserial} correlation in the SEM computation.
+#' Note that, the categorical variables should be represented as \code{factor}
+#' or \code{logical}.
 #' @return a list of the following elements:
 #' \itemize{
 #' \item \code{listofFronts} is a \code{\link{list}} of optimal models for
@@ -58,21 +65,24 @@
 #' where \code{n} is the number of variables. Each positive element
 #' \code{i,j} represents the stability of edge
 #' between \code{i} to \code{j}.
-#' \item If argument \code{toPlot = TRUE}, then a plot of inferred causal model
-#' is generated. Otherwise an object of graph is returned.
+#' \item If argument \code{toPlot = TRUE}, then a visualization of relevant
+#' model structures is generated. Otherwise an object of graph is returned.
 #' An arc represents a causal path, and an (undirected)
-#' edge represents strong association where the direction is undecidable.
+#' edge represents strong association where the direction is undecidable. The
+#' graph is annotated with reliability scores, which are
+#' the highest selection probability in the top-left region of the edge
+#' stability graph.
 #' \item \code{allSeed} is an integer vector representing seeds that are used in
 #' subsampling data. This can be used to replicate the result
 #' in next computation.
 #' }
 #'
 #' @examples
-#' # Cross-sectional data example.
-#' # with a data set about patients with ADHD.
+#' # Cross-sectional data example,
+#' # with an artificial data set with six continuous variables.
 #' # Detail about the data set can be found in the documentation.
 #' # As an example, we only run one subset.
-#' the_data <- adhd
+#' the_data <- crossdata6V
 #' numSubset <- 1
 #' num_iteration <- 5
 #' num_pop <- 10
@@ -82,16 +92,18 @@
 #' num_time <- 1
 #' the_seed <- NULL
 #' the_co <- "covariance"
-#' # assummed that nothing causing variable Gender
-#' cons_matrix <- matrix(c(2, 1, 3, 1, 4, 1, 5, 1, 6, 1), 5, 2, byrow=TRUE)
+#' #assummed that variable 5 does not cause variables 1, 2, and 3
+#' cons_matrix <- matrix(c(5, 1, 5, 2, 5, 3), 3, 2, byrow=TRUE)
 #' th <- 0.1
 #' to_plot <- FALSE
+#' mix <- FALSE
 #'
-#' result_adhd <- stableSpec(theData=the_data, nSubset=numSubset,
+#' result <- stableSpec(theData=the_data, nSubset=numSubset,
 #' iteration=num_iteration,
 #' nPop=num_pop, mutRate=mut_rate, crossRate=cross_rate,
 #' longitudinal=longi, numTime=num_time, seed=the_seed,
-#' co=the_co, consMatrix=cons_matrix, threshold=th, toPlot=to_plot)
+#' co=the_co, consMatrix=cons_matrix, threshold=th,
+#' toPlot=to_plot, mixture = mix)
 #'
 #' @author Ridho Rahmadi \email{r.rahmadi@cs.ru.nl}, Perry Groot, Tom Heskes
 #' @details This function performs exploratory search over
@@ -103,11 +115,16 @@
 #' the data and select those substructures that are both stable and
 #' parsimonious which are then used to infer a causal model.
 #' @references
-#' Rahmadi, R., Groot, P., Heins, M., Knoop, H., & Heskes, T. (2015).
-#' Causality on Cross-Sectional Data: Stable Specification Search in
-#' Constrained Structural Equation Modeling. arXiv preprint arXiv:1506.05600.
+#' Rahmadi, R., Groot, P., Heins, M., Knoop, H., and Heskes, T. (2016)
+#' Causality on cross-sectional data: Stable specification search in
+#' constrained structural equation modeling. \emph{Applied Soft Computing},
+#' ISSN 1568-4946, http://www.sciencedirect.com/science/article/pii/S1568494616305130.
 #'
-#' John Fox, Zhenghua Nie and Jarrett Byrnes (2015). sem:
+#' Rahmadi, R., Groot, P., Heins, M., Knoop, H., & Heskes, T. (2015).
+#' Causality on Longitudinal Data: Stable Specification Search in
+#' Constrained Structural Equation Modeling. \emph{Proceedings of AALTD 2015}, 101.
+#'
+#' Fox, J., Nie, Z., and Byrnes, J. (2015). sem:
 #' Structural Equation Models. R package version 3.1-6.
 #' https://CRAN.R-project.org/package=sem
 #'
@@ -115,12 +132,12 @@
 #' Genetic Algorithm based on R. R package version 1.0.
 #' https://CRAN.R-project.org/package=nsga2R
 #'
-#' Kalisch, M., Machler, M., Colombo, D., Maathuis, M. H., &
+#' Kalisch, M., Machler, M., Colombo, D., Maathuis, M. H., and
 #' Buehlmann, P. (2012). Causal inference using graphical models
 #' with the R package pcalg.
 #' \emph{Journal of Statistical Software}, 47(11), 1-26.
 #'
-#' Meinshausen, N., & Buehlmann, P. (2010). Stability selection.
+#' Meinshausen, N., and Buehlmann, P. (2010). Stability selection.
 #' \emph{Journal of the Royal Statistical Society:
 #' Series B (Statistical Methodology)}, 72(4), 417-473.
 #'
@@ -150,19 +167,29 @@ stableSpec <- function(theData = NULL,
                        co = NULL,
                        consMatrix = NULL,
                        threshold = NULL,
-                       toPlot = NULL) {
+                       toPlot = NULL,
+                       mixture = NULL) {
 
   # to check arguments
   # argument data
+  # if(!is.null(theData)) { # if data is supplied
+  # if (is.numeric(theData) && !(is.matrix(theData))) {
+  # stop("Data should be either a data frame or a matrix of numerical values.")
+  # } else if (!(is.numeric(theData)) && is.data.frame(theData)) {
+  # if (any(sapply(theData, is.numeric) == FALSE)) {
+  #   stop("Data should be either a data frame or a matrix of numerical values.")
+  # }
+  # } else if (!is.numeric(theData)) {
+  #  stop("Data should be either a data frame or a matrix of numerical values.")
+  # }
+  # } else { # if not supplied
+  # stop("Data cannot be missing")
+  # }
+
   if(!is.null(theData)) { # if data is supplied
-    if (is.numeric(theData) && !(is.matrix(theData))) {
-      stop("Data should be either a data frame or a matrix of numerical values.")
-    } else if (!(is.numeric(theData)) && is.data.frame(theData)) {
-      if (any(sapply(theData, is.numeric) == FALSE)) {
-        stop("Data should be either a data frame or a matrix of numerical values.")
-      }
-    } else if (!is.numeric(theData)) {
-      stop("Data should be either a data frame or a matrix of numerical values.")
+    if (!is.matrix(theData) && !is.data.frame(theData)) {
+      stop("Data should be either a data frame or a matrix of numeric, logical, or factor.")
+    } else if (!is.numeric(theData) && !is.factor(theData) ) {
     }
   } else { # if not supplied
     stop("Data cannot be missing")
@@ -271,6 +298,14 @@ stableSpec <- function(theData = NULL,
     toPlot <- TRUE
   }
 
+  # argument mixture
+  if (!is.null(mixture)) {
+    if (!is.logical(mixture)) {
+      stop("Argument mixture should be either logical TRUE or FALSE.")
+    }
+  } else {
+    mixture <- FALSE
+  }
 
   if (!is.null(seed)) {
     if (!is.numeric(seed) || is.matrix(seed)) {
@@ -283,7 +318,7 @@ stableSpec <- function(theData = NULL,
   #get the optimal models from the whole range of model complexities
   optimal_models <- optimalModels(theData, nSubset, iteration, nPop,
                                   mutRate, crossRate, longitudinal,
-                                  numTime, seed, co, consMatrix)
+                                  numTime, seed, co, consMatrix, mixture)
 
 
   #doIt <- TRUE
@@ -295,7 +330,7 @@ stableSpec <- function(theData = NULL,
                              optimal_models$string_size,
                              optimal_models$num_var,
                              longitudinal,
-                             consMatrix)
+                             optimal_models$cons_matrix)
 
 
     #relevant structures
@@ -303,7 +338,7 @@ stableSpec <- function(theData = NULL,
       relevantStructure(optimal_models$listOfFronts,
                         threshold, stabRes$causalStab,
                         stabRes$causalStab_l1, stabRes$edgeStab,
-                        optimal_models$string_size)
+                        optimal_models$string_size, colnames(theData))
 
     #doIt <- FALSE
   #}

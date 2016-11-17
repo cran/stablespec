@@ -13,15 +13,15 @@ fastNonDominatedSort <- function (matrixOfFitness){
   for (i in 1:(popSize - 1)) {
     for (j in i:popSize) {
       if (i != j) {
-        xi <- matrixOfFitness[i, 1:2]
+        xi <- matrixOfFitness[i, 1:2] #to get only yhe chi-square and model complexity
         xj <- matrixOfFitness[j, 1:2]
-        #xi[1] is chisq, xi[2]is df
+        #xi[1] is chi-square, xi[2]is df
         if ((xi[1] <= xj[1] && xi[2] > xj[2]) || (xi[1] < xj[1] && xi[2] >= xj[2])) {
-          idxDominators[[j]] <- c(idxDominators[[j]],i)
-          idxDominatees[[i]] <- c(idxDominatees[[i]],j)
+          idxDominators[[j]] <- c(idxDominators[[j]], i)
+          idxDominatees[[i]] <- c(idxDominatees[[i]], j)
         } else if ((xj[1] <= xi[1] && xj[2] > xi[2]) || (xj[1] < xi[1] && xj[2] >= xi[2])) {
-          idxDominators[[i]] <- c(idxDominators[[i]],j)
-          idxDominatees[[j]] <- c(idxDominatees[[j]],i)
+          idxDominators[[i]] <- c(idxDominators[[i]], j)
+          idxDominatees[[j]] <- c(idxDominatees[[j]], i)
         }
       }
     }
@@ -57,6 +57,8 @@ convertFront <- function(sortedRnk) {
 }
 
 sortBasedOnDist <- function(rnk, dist) {
+  # to order descendingly the members of each front
+  # based on the crowing distances
   for(i in 1:length(rnk)) {
     rnk[[i]] <- rnk[[i]][order(-dist[rnk[[i]], ])]
   }

@@ -2,26 +2,22 @@
 #' of stability and model complexity.
 #' @title Plot of edge and causal path stability.
 #' @param listOfFronts \code{\link{list}} of models including their fitness
-#' and subset index, which is one of the outputs of \code{\link{stableSpec}}.
+#' and subset index.
 #' @param threshold threshold of stability selection. The default is 0.6.
-#' @param stableCausal \code{\link{list}} of the stability of causal path
-#' for the whole range of model complexities, which is one of the outputs
-#' of \code{\link{stableSpec}}.
-#' @param stableCausal_l1 \code{\link{list}} of the stability of
-#' causal path of length 1
-#' for the whole range of model complexities, which is one of the outputs
-#' of \code{\link{stableSpec}}.
-#' @param stableEdge \code{\link{list}} of the stability of edge
-#' for the whole range of model complexities, which is one of the outputs
-#' of \code{\link{stableSpec}}.
+#' @param stableCausal \code{\link{list}} of causal path stability
+#' for the whole range of model complexities.
+#' @param stableCausal_l1 \code{\link{list}} of causal path stability
+#' of length 1 for the whole range of model complexities.
+#' @param stableEdge \code{\link{list}} of edge stability
+#' for the whole range of model complexities.
 #' @param longitudinal \code{TRUE} for longitudinal data,
 #' and \code{FALSE} cross-sectional data.
 #' @return Plot of causal path and edge stability for
-#' every pair of variables, and a plot of altogether combined
-#' including the corresponding stability and complexity thresholds.
+#' every pair of variables, including plots of all edge stabilites
+#' and all cauasl path stabilities.
 #' @examples
 #' \donttest{
-#' the_data <- adhd
+#' the_data <- crossdata6V
 #' numSubset <- 1
 #' num_iteration <- 5
 #' num_pop <- 10
@@ -30,21 +26,21 @@
 #' longi <- FALSE
 #' num_time <- 1
 #' the_co <- "covariance"
-#' # assummed that nothing causing variable Gender
-#' cons_matrix <- matrix(c(2, 1, 3, 1, 4, 1, 5, 1, 6, 1), 5, 2, byrow=TRUE)
+#' #assummed that variable 5 does not cause variables 1, 2, and 3
+#' cons_matrix <- matrix(c(5, 1, 5, 2, 5, 3), 3, 2, byrow=TRUE)
 #' th <- 0.1
 #' to_plot <- FALSE
 #'
-#' result_adhd <- stableSpec(theData=the_data, nSubset=numSubset,
+#' result <- stableSpec(theData=the_data, nSubset=numSubset,
 #' iteration=num_iteration,
 #' nPop=num_pop, mutRate=mut_rate, crossRate=cross_rate,
 #' longitudinal=longi, numTime=num_time,
 #' co=the_co, consMatrix=cons_matrix, threshold=th, toPlot=to_plot)
 #'
-#' plotStability(listOfFronts=result_adhd$listOfFronts, threshold=th,
-#' stableCausal=result_adhd$causalStab,
-#' stableCausal_l1=result_adhd$causalStab_l1,
-#' stableEdge=result_adhd$edgeStab,
+#' plotStability(listOfFronts=result$listOfFronts, threshold=th,
+#' stableCausal=result$causalStab,
+#' stableCausal_l1=result$causalStab_l1,
+#' stableEdge=result$edgeStab,
 #' longitudinal=longi)
 #' }
 #' @author Ridho Rahmadi \email{r.rahmadi@cs.ru.nl}
@@ -105,16 +101,27 @@ plotStability <- function(listOfFronts = NULL, threshold = NULL,
 
 
   # get the number of variables
-  numVar <- nrow(stableCausal[[1]])
+  # if (longitudinal) {
+  #   numVar <- (nrow(stableCausal[[1]])) / 2
+  # } else {
+  #   numVar <- nrow(stableCausal[[1]])
+  # }
+
 
   # get the total number of model complexities
   if (longitudinal) {
-    numComp <- ((numVar / 2) * (numVar / 2)) +
-      ((numVar / 2) * (numVar / 2 - 1) / 2)
+
+    numVar <- (nrow(stableCausal[[1]])) / 2
+
+    numComp <- (numVar * numVar) +
+      (numVar * (numVar - 1) / 2)
 
     stringSize <- (numVar * numVar + (numVar * (numVar - 1)))
 
   } else {
+
+    numVar <- nrow(stableCausal[[1]])
+
     numComp <- numVar * (numVar-1) / 2
     stringSize <- (numVar*(numVar-1))
   }
@@ -125,8 +132,16 @@ plotStability <- function(listOfFronts = NULL, threshold = NULL,
   # create a matrix of M by N, where M is
   # the number of model complexities
   # and N is the number of edges
-  numCol <- numVar * numVar - numVar
-  numColEdge <- numVar * (numVar - 1) / 2
+  if (longitudinal) {
+    numVar <- numVar * 2
+    numCol <- numVar * numVar - numVar
+    numColEdge <- numVar * (numVar - 1) / 2
+  } else {
+    numCol <- numVar * numVar - numVar
+    numColEdge <- numVar * (numVar - 1) / 2
+  }
+  #numCol <- numVar * numVar - numVar
+  #numColEdge <- numVar * (numVar - 1) / 2
   stableEdgeB <- stableEdge
 
   mat4PlotEdgeB <-  matrix(0, length(stableEdge), numCol)
@@ -214,9 +229,15 @@ plotStability <- function(listOfFronts = NULL, threshold = NULL,
   #stability threshold
   lines(c(numComp + 5, numComp / 2, numComp / 3, -1),
         rep(threshold, 4))
+  par(xpd=NA)
+  graphics::text(minBicAt,1.08,expression(paste(pi[bic])), col=1.5, cex=1) #for symbol only
+  graphics::text(-0.4,threshold,expression(paste(pi[sel])),
+                 col=1.5, cex=1) #for symbol only
+  par(xpd=FALSE)
+
 
   #plot all in one causal path stability
-  par(mfrow = c(1, 1))
+  par( mfrow = c(1, 1))
 
   plot(NULL,NULL, main="Causal Path Stability", xlab = "Model Complexity",
        ylab="Selection Probability", xlim=c(length(stableCausal), 1),
@@ -233,4 +254,9 @@ plotStability <- function(listOfFronts = NULL, threshold = NULL,
   #stability threshold
   lines(c(numComp + 5, numComp / 2, numComp / 3, -1),
         rep(threshold, 4))
+  par(xpd=NA)
+  graphics::text(minBicAt,1.08,expression(paste(pi[bic])),
+                 col=1.5, cex=1) #for symbol only
+  graphics::text(-0.4,threshold,expression(paste(pi[sel])),
+                 col=1.5, cex=1) #for symbol only
 }

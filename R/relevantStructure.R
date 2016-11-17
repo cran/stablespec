@@ -1,6 +1,6 @@
 relevantStructure <- function(listOfFronts, threshold, stableCausal,
                               stableCausal_l1, stableEdge,
-                              stringSize) {
+                              stringSize, theNames) {
 
 
   #undirected edges in the inferred causal model
@@ -43,13 +43,14 @@ relevantStructure <- function(listOfFronts, threshold, stableCausal,
 
   undirectedEdges <- NULL
 
-  mat4Plot <- mat4PlotEdge + mat4PlotCausal
+  mat4Plot <- mat4PlotEdge + mat4PlotCausal #can result value of 2
   for (i in 1:(nrow(mat4Plot) - 1)) {
     #b <- i + 1
     for (j in (i + 1):nrow(mat4Plot)) {
 
       if (mat4Plot[i, j] != mat4Plot[j, i]) {
 
+       #this is to make arc by substracting 2 by 1, and 1 by 1
         mat4Plot[i, j] <- mat4Plot[i, j] - 1
         mat4Plot[j, i] <- mat4Plot[j, i] - 1
 
@@ -65,8 +66,13 @@ relevantStructure <- function(listOfFronts, threshold, stableCausal,
     }
   }
 
+  #set names of variables
+  colnames(mat4Plot) <- rownames(mat4Plot) <-
+    colnames(matRelEdge) <- rownames(matRelEdge) <- theNames
+
   #convert into graph object
   theGraph <- as(mat4Plot, Class="graphNEL")
+  theGraphWeight <- as(matRelEdge, Class="graphNEL")
 
   #if any undirected edges, then these lines
   #to convert from bi-directed arc to undirected ones
@@ -84,9 +90,15 @@ relevantStructure <- function(listOfFronts, threshold, stableCausal,
     }
   }
 
+  #annotate with maximum edge stability
+  eAtt <- list()
+  ew <- as.character(unlist(graph::edgeWeights(theGraphWeight)))
+  ew <- ew[setdiff(seq(along=ew), Rgraphviz::removedEdges(theGraphWeight))]
+  names(ew) <- graph::edgeNames(theGraphWeight)
+  eAtt$label <- ew
 
   # layout the graph
-  theGraph <- Rgraphviz::layoutGraph(theGraph)
+  theGraph <- Rgraphviz::layoutGraph(theGraph, edgeAttrs=eAtt)
 
   return(list(relCausalPath=matRelCausal,
               relCausalPathL1=matRelCausal_l1,

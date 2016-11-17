@@ -8,30 +8,38 @@
 #' The next \code{n} data points contain the relations that occur in
 #' time slices \code{t_1} and \code{t_2}. The \code{i-th} subset of \code{n}
 #' data points contain the relations in time slices \code{t_i-1} and \code{t_i}.
+#' One can use function \code{\link{dataReshape}} to reshape longitudinal data.
 #' @param allModelString \code{m} by \code{n} \code{\link{matrix}} of
 #' binary vectors representing models, where \code{m} is the number of models,
 #' and \code{n} is the length of the binary vector.
-#' @param numTime number of time slices. If a cross-sectional data then the
-#' it is 1.
+#' @param numTime number of time slices. If the data is cross-sectional,
+#' this argument must be set to 1.
 #' @param longitudinal \code{TRUE} for longitudinal data,
 #' and \code{FALSE} for cross-sectional data.
 #' @param co whether to use \code{"covariance"} or \code{"correlation"}
 #' \code{\link{matrix}}.
+#' @param mixture if the data contains both continuous and
+#' categorical (or ordinal) variables, this argument can be set
+#' to \code{TRUE}. This implies the use of
+#' \code{polychoric} and \code{polyserial} correlation in the SEM computation.
+#' Note that, the categorical variables should be represented as \code{factor}
+#' or \code{logical}.
 #' @return a \code{\link{matrix}} of models including their fitness':
 #' \code{chi-square} and \code{model complexity.}
 #' @examples
-#' \donttest{
-#' the_data <- adhd
-#' models <- modelPop(nPop=25, numVar=6, longitudinal=FALSE,
-#' consMatrix = matrix(c(1, 2), 1, 2))
+#' the_data <- crossdata6V
+#' #assummed that variable 5 does not cause variables 1, 2, and 3
+#' models <- modelPop(nPop=5, numVar=6, longitudinal=FALSE,
+#' consMatrix = matrix(c(5, 1, 5, 2, 5, 3), 3, 2, byrow=TRUE))
 #'
 #' model_fitness <- getModelFitness(theData=the_data,
-#' allModelString=models, numTime=1, longitudinal=FALSE, co="covariance")
-#' model_fitness}
+#' allModelString=models, numTime=1, longitudinal=FALSE,
+#' co="covariance", mixture = FALSE)
 #' @author Ridho Rahmadi \email{r.rahmadi@cs.ru.nl}
 #' @export
 getModelFitness <- function(theData = NULL, allModelString = NULL,
-                            numTime = NULL, longitudinal = NULL, co = NULL) {
+                            numTime = NULL, longitudinal = NULL,
+                            co = NULL, mixture = NULL) {
 
   # to check arguments
   # argument data
@@ -92,6 +100,15 @@ getModelFitness <- function(theData = NULL, allModelString = NULL,
     co <- "covariance"
   }
 
+  # argument mixture
+  if (!is.null(mixture)) {
+    if (!is.logical(mixture)) {
+      stop("Argument mixture should be either logical TRUE or FALSE.")
+    }
+  } else {
+    mixture <- FALSE
+  }
+
 
   #pre-steps
   if (longitudinal){
@@ -130,7 +147,7 @@ getModelFitness <- function(theData = NULL, allModelString = NULL,
   #get the fitness'
   #imposing index l = 1
   allFitness <- gatherFitness(newData, allModelString, sizeSubset,
-                                 numVar, 1, longitudinal, co)
+                                 numVar, 1, longitudinal, co, mixture)
 
   # remove the columns of index and BIC
   allFitness <- allFitness[, -c(3, 4)]

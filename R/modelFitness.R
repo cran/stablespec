@@ -1,5 +1,5 @@
 gatherFitness <- function(dataSet, allModelString, sizeSubset,
-                         numVar, index, longitudinal, co) {
+                         numVar, index, longitudinal, co, mixture) {
 
   result <- matrix(0, nrow(allModelString), 4)
 
@@ -9,7 +9,8 @@ gatherFitness <- function(dataSet, allModelString, sizeSubset,
       theModel <- longiMatrixFill(allModelString[i, ], numVar)
       #convert model into string of characters to be read by sem::specifyEquations
       modelChar <- writeModel(theModel, numVar, longitudinal)
-      result[i, ] <- getFitness(dataSet, modelChar, sizeSubset, index, co)
+      result[i, ] <- getFitness(dataSet, modelChar, sizeSubset,
+                                index, co, mixture)
     }
 
   } else {
@@ -19,7 +20,8 @@ gatherFitness <- function(dataSet, allModelString, sizeSubset,
       theModel <- stringToMatrix1(allModelString[i, ], numVar, longitudinal)
       #convert model into string of characters to be read by sem::specifyEquations
       modelChar <- writeModel(theModel, numVar, longitudinal)
-      result[i, ] <- getFitness(dataSet, modelChar, sizeSubset, index, co)
+      result[i, ] <- getFitness(dataSet, modelChar, sizeSubset,
+                                index, co, mixture)
     }
   }
 
@@ -27,8 +29,10 @@ gatherFitness <- function(dataSet, allModelString, sizeSubset,
 }
 
 
-getFitness <- function(dataSet, modelChar, sizeSubset, index, co) {
-  # write the model into text file
+getFitness <- function(dataSet, modelChar, sizeSubset,
+                       index, co, mixture) {
+
+  # write the model into variable model_spec
   model_spec <- suppressMessages(sem::specifyEquations(text = modelChar))
 
   # a variables for new names of the data set
@@ -37,12 +41,27 @@ getFitness <- function(dataSet, modelChar, sizeSubset, index, co) {
     theNames[[i]] <- paste('var', i, sep="")
   }
 
-  if(co == "covariance") {
-    #covariance
-    coData <- cov(dataSet)
-  } else { #correlation
-    coData <- cor(dataSet)
+  if(mixture) {
+   # e <- 1
+    corData <- polycor::hetcor(dataSet, std.err = FALSE)$correlations
+    #regularization
+    #coData <- (sizeSubset * corData +
+                 #(e * diag(1, ncol(dataSet)))) / (sizeSubset + e * 1)
+    coData <- (sizeSubset * corData + diag(1, ncol(dataSet))) / (sizeSubset + 1)
+
+
+  } else {
+
+    # if all variable is continous
+    if(co == "covariance") {
+      #covariance
+      coData <- cov(dataSet)
+    } else { #correlation
+      coData <- cor(dataSet)
+    }
+
   }
+
 
   rownames(coData) <- colnames(coData) <- c(unlist(theNames))
   #compute the SEM
@@ -55,8 +74,12 @@ getFitness <- function(dataSet, modelChar, sizeSubset, index, co) {
   bic <-fitSummary$BIC
 
   #adhoc handling
-  if (df == 0 & chi != 0) {
-    chi <- 0
+  #if (df == 0 & chi != 0) {
+  #if (chi < 0) {
+  #  chi <- 0
+  #}
+  if (df == 0) {
+    chi <- bic <- 0
   }
   return(c(chi, df, bic, index))
 }

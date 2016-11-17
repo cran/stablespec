@@ -1,15 +1,15 @@
 #' Repairing a SEM model that is cyclic.
 #' @param stringModel binary vector with length
 #' \code{n^2+(n(n-1))} if \code{longitudinal = TRUE},
-#' or \code{n(n-1)} binary vector if
-#' \code{FALSE}, where \code{n} is the number of variables (equal to argument
-#' \code{numVar}).
+#' or \code{n(n-1)} if
+#' \code{FALSE}, where \code{n} is the number of variables (\code{numVar}).
 #' @param numVar number of variables.
 #' @param longitudinal \code{TRUE} for longitudinal data,
 #' and \code{FALSE} for cross-sectional data.
 #' @return a binary vector with the same length of input, representing a
-#' repaired or acyclic model.
+#' repaired model (acyclic).
 #' @examples
+#' \donttest{
 #' num_vars <- 6
 #' longi_a <- FALSE
 #' longi_b <- TRUE
@@ -28,8 +28,7 @@
 #' longitudinal=longi_b)
 #'
 #' repaired_model_a
-#' repaired_model_b
-#'
+#' repaired_model_b}
 #' @details The main idea of this function is to seek cyclic(s) with
 #' any possible length from a given model, and then to cut the cyclic,
 #' so as to make the model acyclic. Moreover, this function is used in

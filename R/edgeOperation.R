@@ -45,9 +45,9 @@ causalCounter <- function(adjMat) {
   totalCausal <- matrix(0, nrow(adjMat), nrow(adjMat))
   for (i in 1:nrow(adjMat)) {
     if (any(matrixcalc::matrix.power(adjMat, i) > 0)) {
+      #matrixcalc::matrix.power(adjMat, i)
+      #so as to have the same matrix format
       totalCausal <- totalCausal +
-        #matrixcalc::matrix.power(adjMat, i)
-        #so as to have the same matrix format
         matrix(matrixcalc::matrix.power(adjMat, i), nrow(adjMat), nrow(adjMat))
     }
   }

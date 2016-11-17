@@ -8,7 +8,7 @@ test_that("Incorrect/missing argument data yields errors", {
                        mutRate=0.075, crossRate=0.85,
                        longitudinal=FALSE, numTime=1, seed=NULL,
                        co="covariance", consMatrix=matrix(1:4, 2, 2),
-                       threshold=0.6, toPlot=FALSE),
+                       threshold=0.6, toPlot=FALSE, mixture = FALSE),
                "Data cannot be missing")
 
   expect_error(stableSpec(theData=1:10, nSubset=25,
@@ -16,24 +16,17 @@ test_that("Incorrect/missing argument data yields errors", {
                           mutRate=0.075, crossRate=0.85,
                           longitudinal=FALSE, numTime=1, seed=NULL,
                           co="covariance", consMatrix=matrix(1:4, 2, 2),
-                          threshold=0.6, toPlot=FALSE),
-               "Data should be either a data frame or a matrix of numerical values.")
+                          threshold=0.6, toPlot=FALSE, mixture = FALSE),
+               "Data should be either a data frame or a matrix of numeric, logical, or factor.")
 
   expect_error(stableSpec(theData=c("a", "b"), nSubset=25,
                           iteration=20, nPop=100,
                           mutRate=0.075, crossRate=0.85,
                           longitudinal=FALSE, numTime=1, seed=NULL,
                           co="covariance", consMatrix=matrix(1:4, 2, 2),
-                          threshold=0.6, toPlot=FALSE),
-               "Data should be either a data frame or a matrix of numerical values.")
+                          threshold=0.6, toPlot=FALSE, mixture=FALSE),
+               "Data should be either a data frame or a matrix of numeric, logical, or factor.")
 
-  expect_error(stableSpec(theData=data.frame(letter=letters[1:3], number=1:3),
-                          nSubset=25, iteration=20, nPop=100,
-                          mutRate=0.075, crossRate=0.85,
-                          longitudinal=FALSE, numTime=1, seed=NULL,
-                          co="covariance", consMatrix=matrix(1:4, 2, 2),
-                          threshold=0.6, toPlot=FALSE),
-               "Data should be either a data frame or a matrix of numerical values.")
 })
 
 test_that("Incorrect/missing numerical or logical or character arguments yields errors", {
@@ -44,7 +37,7 @@ test_that("Incorrect/missing numerical or logical or character arguments yields 
                           mutRate=0.075, crossRate=0.85,
                           longitudinal=FALSE, numTime=1, seed=NULL,
                           co="covariance", consMatrix=matrix(1:4, 2, 2),
-                          threshold=0.6, toPlot=FALSE),
+                          threshold=0.6, toPlot=FALSE, mixture = FALSE),
                "Argument nSubset should be positive numeric, e.g., 10.")
 
   expect_error(stableSpec(theData=data.frame(number1=1:3, number2=4:6, number3=7:9, number4=10:12),
@@ -52,7 +45,7 @@ test_that("Incorrect/missing numerical or logical or character arguments yields 
                           mutRate=0.075, crossRate=0.85,
                           longitudinal=FALSE, numTime=1, seed=NULL,
                           co="covariance", consMatrix=matrix(1:4, 2, 2),
-                          threshold=0.6, toPlot=FALSE),
+                          threshold=0.6, toPlot=FALSE, mixture = FALSE),
                "Argument iteration or NSGA-II generations should be positive numeric, e.g., 20.")
 
   expect_error(stableSpec(theData=data.frame(number1=1:3, number2=4:6, number3=7:9, number4=10:12),
@@ -60,7 +53,7 @@ test_that("Incorrect/missing numerical or logical or character arguments yields 
                           mutRate=0.075, crossRate=0.85,
                           longitudinal=FALSE, numTime=1, seed=NULL,
                           co="covariance", consMatrix=matrix(1:4, 2, 2),
-                          threshold=0.6, toPlot=FALSE),
+                          threshold=0.6, toPlot=FALSE, mixture = FALSE),
                "Argument nPop should be positive numeric, e.g., 50.")
 
   expect_error(stableSpec(theData=data.frame(number1=1:3, number2=4:6, number3=7:9, number4=10:12),
@@ -68,7 +61,7 @@ test_that("Incorrect/missing numerical or logical or character arguments yields 
                           mutRate="notNumerical", crossRate=0.85,
                           longitudinal=FALSE, numTime=1, seed=NULL,
                           co="covariance", consMatrix=matrix(1:4, 2, 2),
-                          threshold=0.6, toPlot=FALSE),
+                          threshold=0.6, toPlot=FALSE, mixture = FALSE),
                "Argument mutRate should be positive numeric, e.g., 0.075.")
 
   expect_error(stableSpec(theData=data.frame(number1=1:3, number2=4:6, number3=7:9, number4=10:12),
@@ -76,7 +69,7 @@ test_that("Incorrect/missing numerical or logical or character arguments yields 
                           mutRate=0.075, crossRate="notNumerical",
                           longitudinal=FALSE, numTime=1, seed=NULL,
                           co="covariance", consMatrix=matrix(1:4, 2, 2),
-                          threshold=0.6, toPlot=FALSE),
+                          threshold=0.6, toPlot=FALSE, mixture = FALSE),
                "Argument crossRate should be positive numeric, e.g., 0.85.")
 
   expect_error(stableSpec(theData=data.frame(number1=1:3, number2=4:6, number3=7:9, number4=10:12),
@@ -84,7 +77,7 @@ test_that("Incorrect/missing numerical or logical or character arguments yields 
                           mutRate=0.075, crossRate=0.85,
                           longitudinal=FALSE, numTime="notNumerical", seed=NULL,
                           co="covariance", consMatrix=matrix(1:4, 2, 2),
-                          threshold=0.6, toPlot=FALSE),
+                          threshold=0.6, toPlot=FALSE, mixture = FALSE),
                "Argument numTime should be positive numeric, e.g., 1 if cross-sectional data.")
 
   expect_error(stableSpec(theData=data.frame(number1=1:3, number2=4:6, number3=7:9, number4=10:12),
@@ -92,7 +85,7 @@ test_that("Incorrect/missing numerical or logical or character arguments yields 
                           mutRate=0.075, crossRate=0.85,
                           longitudinal=FALSE, numTime=1, seed=NULL,
                           co="covariance", consMatrix=matrix(1:4, 2, 2),
-                          threshold="notNumerical", toPlot=FALSE),
+                          threshold="notNumerical", toPlot=FALSE, mixture = FALSE),
                "Argument threshold should be positive numeric, e.g., 0.6.")
 
   expect_error(stableSpec(theData=data.frame(number1=1:3, number2=4:6, number3=7:9, number4=10:12),
@@ -100,7 +93,7 @@ test_that("Incorrect/missing numerical or logical or character arguments yields 
                           mutRate=0.075, crossRate=0.85,
                           longitudinal=1:3, numTime=1, seed=NULL,
                           co="covariance", consMatrix=matrix(1:4, 2, 2),
-                          threshold=0.6, toPlot=FALSE),
+                          threshold=0.6, toPlot=FALSE, mixture = FALSE),
                "Argument longitudinal should be either logical TRUE or FALSE.")
 
   expect_error(stableSpec(theData=data.frame(number1=1:3, number2=4:6, number3=7:9, number4=10:12),
@@ -108,7 +101,7 @@ test_that("Incorrect/missing numerical or logical or character arguments yields 
                           mutRate=0.075, crossRate=0.85,
                           longitudinal=NULL, numTime=1, seed=NULL,
                           co="covariance", consMatrix=matrix(1:4, 2, 2),
-                          threshold=0.6, toPlot=FALSE),
+                          threshold=0.6, toPlot=FALSE, mixture = FALSE),
                "Argument longitudinal cannot be missing.")
 
   expect_error(stableSpec(theData=data.frame(number1=1:3, number2=4:6, number3=7:9, number4=10:12),
@@ -116,7 +109,7 @@ test_that("Incorrect/missing numerical or logical or character arguments yields 
                           mutRate=0.075, crossRate=0.85,
                           longitudinal=FALSE, numTime=1, seed="notNumerical",
                           co="covariance", consMatrix=matrix(1:4, 2, 2),
-                          threshold=0.6, toPlot=FALSE),
+                          threshold=0.6, toPlot=FALSE, mixture = FALSE),
                "Argument seed should be numeric vector.")
 
 
@@ -126,7 +119,7 @@ test_that("Incorrect/missing numerical or logical or character arguments yields 
                           mutRate=0.075, crossRate=0.85,
                           longitudinal=FALSE, numTime=1, seed=NULL,
                           co=20, consMatrix=matrix(1:4, 2, 2),
-                          threshold=0.6, toPlot=FALSE),
+                          threshold=0.6, toPlot=FALSE, mixture = FALSE),
                "Argument co should be a vector of characters, e.g., either covariance or correlation.")
 
   expect_error(stableSpec(theData=data.frame(number1=1:3, number2=4:6, number3=7:9, number4=10:12),
@@ -134,7 +127,7 @@ test_that("Incorrect/missing numerical or logical or character arguments yields 
                           mutRate=0.075, crossRate=0.85,
                           longitudinal=FALSE, numTime=1, seed=NULL,
                           co="wrongvector", consMatrix=matrix(1:4, 2, 2),
-                          threshold=0.6, toPlot=FALSE),
+                          threshold=0.6, toPlot=FALSE, mixture = FALSE),
                "Argument co should be either covariance or correlation matrix.")
 
   expect_error(stableSpec(theData=data.frame(number1=1:3, number2=4:6, number3=7:9, number4=10:12),
@@ -142,7 +135,7 @@ test_that("Incorrect/missing numerical or logical or character arguments yields 
                           mutRate=0.075, crossRate=0.85,
                           longitudinal=FALSE, numTime=1, seed=NULL,
                           co="covariance", consMatrix=1:3,
-                          threshold=0.6, toPlot=FALSE),
+                          threshold=0.6, toPlot=FALSE, mixture = FALSE),
                "The constraints should be formed in a matrix.")
 
 
@@ -151,8 +144,16 @@ test_that("Incorrect/missing numerical or logical or character arguments yields 
                           mutRate=0.075, crossRate=0.85,
                           longitudinal=FALSE, numTime=1, seed=NULL,
                           co="covariance", consMatrix=matrix(1:4, 2, 2),
-                          threshold=0.6, toPlot="notLogical"),
+                          threshold=0.6, toPlot="notLogical", mixture = FALSE),
                "Argument toPlot should be either logical TRUE or FALSE.")
+
+expect_error(stableSpec(theData=data.frame(number1=1:3, number2=4:6, number3=7:9, number4=10:12),
+                          nSubset=25, iteration=20, nPop=100,
+                          mutRate=0.075, crossRate=0.85,
+                          longitudinal=FALSE, numTime=1, seed=NULL,
+                          co="covariance", consMatrix=matrix(1:4, 2, 2),
+                          threshold=0.6, toPlot=FALSE, mixture ="notLogical"),
+               "Argument mixture should be either logical TRUE or FALSE.")
 
 })
 
@@ -165,7 +166,7 @@ test_that("Conflicting arguments yield errors.", {
                           mutRate=0.075, crossRate=0.85,
                           longitudinal=TRUE, numTime=1, seed=NULL,
                           co="covariance", consMatrix=matrix(1:4, 2, 2),
-                          threshold=0.6, toPlot=FALSE),
+                          threshold=0.6, toPlot=FALSE, mixture=FALSE),
                "Longitudinal data should have more than one time slices, e.g., numTime = 2, with two time slices.")
 
   expect_error(stableSpec(theData=data.frame(number1=1:3, number2=4:6, number3=7:9, number4=10:12),
@@ -173,7 +174,7 @@ test_that("Conflicting arguments yield errors.", {
                           mutRate=0.075, crossRate=0.85,
                           longitudinal=FALSE, numTime=2, seed=NULL,
                           co="covariance", consMatrix=matrix(1:4, 2, 2),
-                          threshold=0.6, toPlot=FALSE),
+                          threshold=0.6, toPlot=FALSE, mixture=FALSE),
                "Cross-sectional data should have only one time slice, e.g., numTime = 1")
 })
 
@@ -185,12 +186,13 @@ test_that("Incorrect/missing argument in plotStability yields errors", {
   skip_on_cran()
   library(graph)
 
-
-  result <- stableSpec(theData=adhd, nSubset=1, iteration=5, nPop=10,
+  result <- stableSpec(theData=crossdata6V, nSubset=1, iteration=5, nPop=10,
                        mutRate=0.075, crossRate=0.85, longitudinal=FALSE, numTime=1,
                        seed=NULL, co="covariance",
-                       consMatrix=matrix(c(2, 1, 3, 1, 4, 1, 5, 1, 6, 1), 5, 2, byrow=TRUE),
-                       threshold=0.1, toPlot=FALSE)
+                       consMatrix=matrix(c(5, 1, 5, 2), 2, 2, byrow=TRUE),
+                       threshold=0.1, toPlot=FALSE, mixture=FALSE)
+
+
 
   expect_error(plotStability(listOfFronts=1:3, threshold=0.6,
                              stableCausal=result$causalStab,

@@ -10,7 +10,7 @@ initialPopulation <- function(numVar, stringSize, longitudinal, consMatrix) {
   interString <- rep(0, numVar * numVar)
 
   # matrix of models
-  # also will be a frist model which all zero represdenting model with
+  # also will be a frist model which all zero representing model with
   # no connection
   allString <- matrix(0, 1, stringSize)
 
@@ -32,7 +32,7 @@ initialPopulation <- function(numVar, stringSize, longitudinal, consMatrix) {
                                        the_index[, 2] == consMatrix[i, 2]), ]
     }
 
-    #take only numMOdels of them
+    #take only numModels of them
     the_index <- the_index[1:numModels, ]
 
     both <- TRUE

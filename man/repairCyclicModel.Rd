@@ -9,9 +9,8 @@ repairCyclicModel(stringModel = NULL, numVar = NULL, longitudinal = NULL)
 \arguments{
 \item{stringModel}{binary vector with length
 \code{n^2+(n(n-1))} if \code{longitudinal = TRUE},
-or \code{n(n-1)} binary vector if
-\code{FALSE}, where \code{n} is the number of variables (equal to argument
-\code{numVar}).}
+or \code{n(n-1)} if
+\code{FALSE}, where \code{n} is the number of variables (\code{numVar}).}
 
 \item{numVar}{number of variables.}
 
@@ -20,7 +19,7 @@ and \code{FALSE} for cross-sectional data.}
 }
 \value{
 a binary vector with the same length of input, representing a
-repaired or acyclic model.
+repaired model (acyclic).
 }
 \description{
 Repairing a SEM model that is cyclic.
@@ -32,6 +31,7 @@ so as to make the model acyclic. Moreover, this function is used in
 \code{\link{stableSpec}} to ensure no cyclic model in the computation.
 }
 \examples{
+\donttest{
 num_vars <- 6
 longi_a <- FALSE
 longi_b <- TRUE
@@ -50,8 +50,7 @@ repaired_model_b <- repairCyclicModel(stringModel=model_b, numVar=num_vars,
 longitudinal=longi_b)
 
 repaired_model_a
-repaired_model_b
-
+repaired_model_b}
 }
 \author{
 Ridho Rahmadi \email{r.rahmadi@cs.ru.nl}

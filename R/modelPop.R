@@ -1,6 +1,5 @@
 #' Generating recursive (acyclic) SEM models represented by
-#' binary vectors. The generated models also include a model
-#' from each model complexity.
+#' binary vectors.
 #' @title Random SEM models.
 #' @param nPop number of models to generate or population size.
 #' @param numVar number of variables.
@@ -22,13 +21,14 @@
 #' and 0 otherwise. In addition, the generated models
 #' have passed the cyclic test to ensure they are all acyclic. The function
 #' also includes \code{minPop} models which representing models
-#' from each model complexity,
-#' where \code{minPop = numVar(numVar-1)/2+1} if
-#' \code{longitudinal = FALSE}, or
-#' \code{minPop = (numVar(numVar-1)/2+1)+numVar^2} if
-#' \code{longitudinal = TRUE}. If \code{nPop <= minPop} then
+#' from each model complexity, i.e., \code{minPop = numVar(numVar-1)/2+1},
+#' if \code{longitudinal = FALSE}, or
+#' \code{minPop = (numVar(numVar-1)/2+1)+numVar^2}, otherwise.
+#' If \code{nPop <= minPop} then
 #' this function will generate \code{minPop} models.
-#' @examples models <- modelPop(nPop=25, numVar=6,
+#' @examples
+#' #assumming a prior knowledge that variable 1 does not cause variable 2
+#' models <- modelPop(nPop=25, numVar=6,
 #' longitudinal=FALSE, consMatrix = matrix(c(1, 2), 1, 2))
 #' models
 #' @author Ridho Rahmadi \email{r.rahmadi@cs.ru.nl}

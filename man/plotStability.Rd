@@ -9,30 +9,26 @@ plotStability(listOfFronts = NULL, threshold = NULL, stableCausal = NULL,
 }
 \arguments{
 \item{listOfFronts}{\code{\link{list}} of models including their fitness
-and subset index, which is one of the outputs of \code{\link{stableSpec}}.}
+and subset index.}
 
 \item{threshold}{threshold of stability selection. The default is 0.6.}
 
-\item{stableCausal}{\code{\link{list}} of the stability of causal path
-for the whole range of model complexities, which is one of the outputs
-of \code{\link{stableSpec}}.}
+\item{stableCausal}{\code{\link{list}} of causal path stability
+for the whole range of model complexities.}
 
-\item{stableCausal_l1}{\code{\link{list}} of the stability of
-causal path of length 1
-for the whole range of model complexities, which is one of the outputs
-of \code{\link{stableSpec}}.}
+\item{stableCausal_l1}{\code{\link{list}} of causal path stability
+of length 1 for the whole range of model complexities.}
 
-\item{stableEdge}{\code{\link{list}} of the stability of edge
-for the whole range of model complexities, which is one of the outputs
-of \code{\link{stableSpec}}.}
+\item{stableEdge}{\code{\link{list}} of edge stability
+for the whole range of model complexities.}
 
 \item{longitudinal}{\code{TRUE} for longitudinal data,
 and \code{FALSE} cross-sectional data.}
 }
 \value{
 Plot of causal path and edge stability for
-every pair of variables, and a plot of altogether combined
-including the corresponding stability and complexity thresholds.
+every pair of variables, including plots of all edge stabilites
+and all cauasl path stabilities.
 }
 \description{
 Plot each of the stability of causal path and edge including the threshold
@@ -40,7 +36,7 @@ of stability and model complexity.
 }
 \examples{
 \donttest{
-the_data <- adhd
+the_data <- crossdata6V
 numSubset <- 1
 num_iteration <- 5
 num_pop <- 10
@@ -49,21 +45,21 @@ cross_rate <- 0.85
 longi <- FALSE
 num_time <- 1
 the_co <- "covariance"
-# assummed that nothing causing variable Gender
-cons_matrix <- matrix(c(2, 1, 3, 1, 4, 1, 5, 1, 6, 1), 5, 2, byrow=TRUE)
+#assummed that variable 5 does not cause variables 1, 2, and 3
+cons_matrix <- matrix(c(5, 1, 5, 2, 5, 3), 3, 2, byrow=TRUE)
 th <- 0.1
 to_plot <- FALSE
 
-result_adhd <- stableSpec(theData=the_data, nSubset=numSubset,
+result <- stableSpec(theData=the_data, nSubset=numSubset,
 iteration=num_iteration,
 nPop=num_pop, mutRate=mut_rate, crossRate=cross_rate,
 longitudinal=longi, numTime=num_time,
 co=the_co, consMatrix=cons_matrix, threshold=th, toPlot=to_plot)
 
-plotStability(listOfFronts=result_adhd$listOfFronts, threshold=th,
-stableCausal=result_adhd$causalStab,
-stableCausal_l1=result_adhd$causalStab_l1,
-stableEdge=result_adhd$edgeStab,
+plotStability(listOfFronts=result$listOfFronts, threshold=th,
+stableCausal=result$causalStab,
+stableCausal_l1=result$causalStab_l1,
+stableEdge=result$edgeStab,
 longitudinal=longi)
 }
 }

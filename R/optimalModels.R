@@ -1,6 +1,6 @@
 optimalModels <- function(theData, nSubset, iteration, nPop,
                           mutRate, crossRate, longitudinal,
-                          numTime, seed, co, consMatrix) {
+                          numTime, seed, co, consMatrix, mixture) {
 
   #masterList to store the pareto fronts
   #allSubsets to store the subsets
@@ -38,6 +38,7 @@ optimalModels <- function(theData, nSubset, iteration, nPop,
   #form constraint
   if (is.null(consMatrix)) {
     constraint1 <- 0
+    consMatrix <- matrix(0, 1, 2, byrow = TRUE)
   } else {
     constraint1 <- convertCons(consMatrix, numVar)
   }
@@ -72,8 +73,8 @@ optimalModels <- function(theData, nSubset, iteration, nPop,
 
 
     #perform initial computation
-  initialResult <- gatherFitness(newData, initialModels, sizeSubset,
-                                 numVar, l, longitudinal, co)
+    initialResult <- gatherFitness(newData, initialModels, sizeSubset,
+                                   numVar, l, longitudinal, co, mixture)
 
   # FIRST GENERATION----------------------------------------------------
 
@@ -101,13 +102,13 @@ optimalModels <- function(theData, nSubset, iteration, nPop,
     # Crossover
     i <- 1
     while (i < nPop) {
-      toss <- runif(1,0,1)
+      toss <- runif(1, 0, 1)
       if (toss <= crossRate) {
         #generate crossovered offspring, by taking two consecutive models
         offsprings <- crossOver(currentPop[i, ],
                                 currentPop[i+1, ], numVar, longitudinal)
         currentPop[i, ] <- offsprings[[1]]
-        currentPop[i+1,] <- offsprings[[2]]
+        currentPop[i+1, ] <- offsprings[[2]]
       }
       #to take the next two consecutive models
       i <- i + 2
@@ -121,7 +122,7 @@ optimalModels <- function(theData, nSubset, iteration, nPop,
 
     allR0 <- rbind(P0, currentPop)
     preR0 <- gatherFitness(newData, allR0, sizeSubset, numVar,
-                           l, longitudinal, co)
+                           l, longitudinal, co, mixture)
 
     ranking <- fastNonDominatedSort(preR0)
     rnkIndex <- integer(nPop)
@@ -133,7 +134,7 @@ optimalModels <- function(theData, nSubset, iteration, nPop,
 
 
     #to get the range of each objective
-    objRange <- apply(preR0[,1:2], 2, max) - apply(preR0[,1:2], 2, min)
+    objRange <- apply(preR0[, 1:2], 2, max) - apply(preR0[, 1:2], 2, min)
 
 
     #to assign the crowded distance for each member in each front
@@ -151,9 +152,8 @@ optimalModels <- function(theData, nSubset, iteration, nPop,
     P0 <- R0[1:nPop, ]
 
 
-    #to get the first front fitness
-    #started from j+1, because at j,
-    #there is initial result before the looping
+    # if the length of the first front < nPop, take them all
+    # or take them as many as nPop otherwise (if length is more than nPop)
     if (length(sortedDist[[1]]) < nPop) {
       lengthInd <- length(sortedDist[[1]])
       takenInd <- sortedDist[[1]]
@@ -189,6 +189,7 @@ optimalModels <- function(theData, nSubset, iteration, nPop,
 
   masterList[[l]] <- uniqueFirstFront
   }
-  return(list(listOfFronts=masterList, num_var=numVar, string_size=stringSize))
+  return(list(listOfFronts=masterList, num_var=numVar,
+              string_size=stringSize, cons_matrix = consMatrix))
 }
 
