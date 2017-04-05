@@ -7,7 +7,7 @@
 stableSpec(theData = NULL, nSubset = NULL, iteration = NULL,
   nPop = NULL, mutRate = NULL, crossRate = NULL, longitudinal = NULL,
   numTime = NULL, seed = NULL, co = NULL, consMatrix = NULL,
-  threshold = NULL, toPlot = NULL, mixture = NULL)
+  threshold = NULL, toPlot = NULL, mixture = NULL, log = NULL)
 }
 \arguments{
 \item{theData}{a data frame containing the data to which the model will be
@@ -17,7 +17,10 @@ relations that occur in the first two time slices \code{t_0} and \code{t_1}.
 The next \code{n} data points contain the relations that occur in
 time slices \code{t_1} and \code{t_2}. The \code{i-th} subset of \code{n}
 data points contain the relations in time slices \code{t_i-1} and \code{t_i}.
-One can use function \code{\link{dataReshape}} to reshape longitudinal data.}
+One can use function \code{\link{dataReshape}} to reshape longitudinal data.
+Uses the \code{foreach} package for parallel computation. You need to register
+a parallel backend before calling \code{stableSpec} if you want to parallize
+computation. For details see the \code{foreach} package.}
 
 \item{nSubset}{number of subsets to draw. In practice, it is suggested
 to have at least 25 subsets. The default is 10.}
@@ -63,6 +66,8 @@ to \code{TRUE}. This implies the use of
 \code{polychoric} and \code{polyserial} correlation in the SEM computation.
 Note that, the categorical variables should be represented as \code{factor}
 or \code{logical}.}
+
+\item{log}{an optional logfile to monitor the progress of the algorithm.}
 }
 \value{
 a list of the following elements:
@@ -117,9 +122,14 @@ parsimonious which are then used to infer a causal model.
 }
 \examples{
 # Cross-sectional data example,
-# with an artificial data set with six continuous variables.
+# with an artificial data set of six continuous variables.
 # Detail about the data set can be found in the documentation.
 # As an example, we only run one subset.
+# Note that stableSpec() uses foreach to support
+# parallel computation, which could issue a warning
+# when running sequentially as the following example. However
+# the warning can be just ignored.
+
 the_data <- crossdata6V
 numSubset <- 1
 num_iteration <- 5
@@ -143,9 +153,25 @@ longitudinal=longi, numTime=num_time, seed=the_seed,
 co=the_co, consMatrix=cons_matrix, threshold=th,
 toPlot=to_plot, mixture = mix)
 
-}
-\author{
-Ridho Rahmadi \email{r.rahmadi@cs.ru.nl}, Perry Groot, Tom Heskes
+##########################################################
+## Parallel computation is possible by
+## registering parallel backend, e.g., package doParallel.
+## For example, add the following lines on top of
+## the example above.
+#
+# library(parallel)
+# library(doParallel)
+# cl <- makeCluster(detectCores())
+# registerDoParallel(cl)
+#
+## Then call stableSpec() as normal.
+##
+## Note that makeCluster() and detectCores() are
+## from package parallel, and registerDoParallel()
+## is from package doParallel. For more detail
+## check the aforementioned packages' documentations.
+###########################################################
+
 }
 \references{
 Rahmadi, R., Groot, P., Heins, M., Knoop, H., and Heskes, T. (2016)
@@ -182,4 +208,7 @@ Chickering, D. M. (2002). Learning equivalence classes of
 Bayesian-network structures. \emph{The Journal of
 Machine Learning Research}, 2, 445-498.
 }
-
+\author{
+Ridho Rahmadi \email{r.rahmadi@cs.ru.nl}, Perry Groot, Tom Heskes.
+Christoph Stich is the contributor for parallel support.
+}

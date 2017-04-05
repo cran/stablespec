@@ -1,4 +1,4 @@
-crowdingDistance <- function (pop, rnk, rng, varNo) {
+crowdingDistance <- function (pop, rnk, rng) {
   # All credit goes to Ching-Shih Tsou who originally wrote this function.
   # We borrow this function and modified it so as to meet our need.
   #
